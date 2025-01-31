@@ -1,0 +1,95 @@
+[versions]
+agp = "8.6.1"
+kotlin = "1.9.0"
+coreKtx = "1.15.0"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+lifecycleRuntimeKtx = "2.8.7"
+activityCompose = "1.10.0"
+composeBom = "2024.04.01"
+appcompat = "1.7.0"
+material = "1.12.0"
+
+retrofit = "2.11.0"
+daggerHilt = "2.55"
+daggerHiltNavigationCompose = "1.2.0"
+coil = "3.0.4"
+okHttp = "4.12.0"
+lifecycle = "2.8.7"
+coroutine = "1.9.0"
+room = "2.6.1"
+paging3 = "3.3.5"
+cameraX = "1.5.0-alpha05"
+navigationCompose = "2.8.5"
+lottieAnimations = "6.6.2"
+datastoreCoreAndroid = "1.1.2"
+pullToRefresh = "0.27.0"
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+
+retrofit2 = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+gsonConverter = { group = "com.squareup.retrofit2" , name = "converter-gson", version.ref = "retrofit" }
+
+okHttp = { group = "com.squareup.okhttp3" , name = "okhttp" , version.ref = "okHttp"}
+okHttpBom = { group = "com.squareup.okhttp3" , name = "okhttp-bom" , version.ref = "okHttp"}
+okHttpLoggingInterceptor = { group = "com.squareup.okhttp3" , name = "logging-interceptor" , version.ref = "okHttp"}
+
+daggerHilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "daggerHilt" }
+daggerHiltKaptCompiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "daggerHilt" }
+daggerHilt-navigation-compose = { group = "androidx.hilt" ,name  = "hilt-navigation-compose" , version.ref = "daggerHiltNavigationCompose"}
+
+coil = { group = "io.coil-kt.coil3" , name = "coil-compose" , version.ref = "coil" }
+coilOkHttp = { group = "io.coil-kt.coil3" , name = "coil-network-okhttp" , version.ref = "coil" }
+
+viewModel = { group = "androidx.lifecycle" , name = "lifecycle-viewmodel-ktx" , version.ref = "lifecycle" }
+viewModelUtilities = { group = "androidx.lifecycle" , name = "lifecycle-viewmodel-compose" , version.ref = "lifecycle" }
+liveData = { group = "androidx.lifecycle" , name = "lifecycle-livedata-ktx" , version.ref = "lifecycle" }
+lifecycleUtilities = { group = "androidx.lifecycle" , name = "lifecycle-runtime-compose" , version.ref = "lifecycle" }
+viewModelSaveState = { group = "androidx.lifecycle" , name = "lifecycle-viewmodel-savedstate" , version.ref = "lifecycle" }
+
+coroutine = { group = "org.jetbrains.kotlinx" , name = "kotlinx-coroutines-android" , version.ref = "coroutine" }
+
+roomSQLite = { group = "androidx.room" , name = "room-runtime" , version.ref = "room" }
+roomWithCoroutines = { group = "androidx.room" , name = "room-ktx" , version.ref = "room" }
+roomPaging3 = { group = "androidx.room" , name = "room-paging" , version.ref = "room" }
+kaptCompiler = { group = "androidx.room" , name = "room-compiler" , version.ref = "room" }
+
+paging3 = { group = "androidx.paging" , name = "paging-runtime" , version.ref = "paging3" }
+paging3JetpackCompose = { group = "androidx.paging" , name = "paging-compose" , version.ref = "paging3" }
+
+cameraCore = { group = "androidx.camera" , name = "camera-core" , version.ref = "cameraX" }
+camera2 = { group = "androidx.camera" , name = "camera-camera2" , version.ref = "cameraX" }
+cameraLifecycle = { group = "androidx.camera" , name = "camera-lifecycle" , version.ref = "cameraX" }
+
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+
+lottieAnimtations = { group = "com.airbnb.android" , name = "lottie-compose" , version.ref = "lottieAnimations" }
+
+androidx-dataStore = { group = "androidx.datastore" , name  = "datastore-preferences" , version.ref = "datastoreCoreAndroid" }
+
+pullToRefresh = { group = "com.google.accompanist" , name = "accompanist-swiperefresh" , version.ref = "pullToRefresh" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+
+daggerHiltProject = { id = "com.google.dagger.hilt.android", version.ref = "daggerHilt" }
+

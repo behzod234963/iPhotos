@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">iPhotos</string>
+    <string name="popular">Popular</string>
+    <string name="latest">Latest</string>
+</resources>
