@@ -20,7 +20,7 @@ data class HitsItem(
 	val webformatHeight: Int? = null,
 
 	@field:SerializedName("largeImageURL")
-	val largeImageURL: String? = null,
+	val largeImageURL: String = "",
 
 	@field:SerializedName("imageWidth")
 	val imageWidth: Int? = null,

@@ -11,6 +11,7 @@ interface RemotePhotosRepository {
 
     fun getPhotos(
         key:String = BuildConfig.api_key,
+        q:String,
         imageType:String = "photo",
         order:String = "popular",
     ): Flow<PagingData<HitsItem>>

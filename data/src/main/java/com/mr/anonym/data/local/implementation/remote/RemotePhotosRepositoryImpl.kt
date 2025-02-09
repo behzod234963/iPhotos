@@ -18,12 +18,12 @@ class RemotePhotosRepositoryImpl(private val api: PhotosApi):RemotePhotosReposit
     @OptIn(ExperimentalPagingApi::class)
     override fun getPhotos(
         key: String,
+        q: String,
         imageType: String,
         order: String
     ): Flow<PagingData<HitsItem>> = Pager(
         config = PagingConfig(10),
-        remoteMediator = PhotosRemoteMediator(api),
-        pagingSourceFactory = { PhotosPagingSource(api) }
+        pagingSourceFactory = { PhotosPagingSource(api = api, order = order, q = q) }
     ).flow
 
     override suspend fun getPhotoById(key: String, id: Int, imageType: String): Response<PhotosModel> = api.getPhotoById(id = id)

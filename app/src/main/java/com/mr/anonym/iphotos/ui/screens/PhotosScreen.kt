@@ -1,27 +1,37 @@
 package com.mr.anonym.iphotos.ui.screens
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,8 +41,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -50,14 +63,10 @@ import com.mr.anonym.data.local.dataStore.DataStoreInstance
 import com.mr.anonym.iphotos.R
 import com.mr.anonym.iphotos.presentation.navigation.Screens
 import com.mr.anonym.iphotos.presentation.utils.CheckConnection
+import com.mr.anonym.iphotos.presentation.utils.SharePhoto
 import com.mr.anonym.iphotos.presentation.viewModel.PhotosViewModel
 import com.mr.anonym.iphotos.ui.items.PhotosGridItem
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlin.coroutines.CoroutineContext
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,11 +83,14 @@ fun PhotosScreen(
 
     val isExpanded = remember { mutableStateOf(false) }
     val isLoading = remember { mutableStateOf(true) }
+    val isSearchClicked = remember { mutableStateOf(false) }
     val isRefresh = viewModel.isRefresh.collectAsState()
     val isConnected = checkConnection.networkStatus.collectAsState(false)
 
     val textPopular = stringResource(R.string.popular)
     val textLatest = stringResource(R.string.latest)
+    val order = remember { mutableStateOf("popular") }
+    val searchText = remember { mutableStateOf("") }
 
     val defaultColor = if (isSystemInDarkTheme()) Color.Black else Color.White
     val fontColor = if (isSystemInDarkTheme()) Color.White else Color.Black
@@ -90,9 +102,21 @@ fun PhotosScreen(
         spec = LottieCompositionSpec.RawRes(R.raw.anim_internet_off)
     )
 
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
+
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isRefresh.value)
 
-    var photos = viewModel.getPhotos("popular").collectAsLazyPagingItems()
+    val photos = viewModel.getPhotos(
+        order.value,
+        if (
+            searchText.value.isEmpty()
+            || searchText.value.isBlank()
+        )
+            "cars"
+        else
+            searchText.value
+    ).collectAsLazyPagingItems()
 
     if (isConnected.value) {
         LaunchedEffect(Unit) {
@@ -108,13 +132,107 @@ fun PhotosScreen(
             .fillMaxSize()
             .background(defaultColor)
     ) {
-        TopAppBar(
+        MediumTopAppBar(
             title = {
-                Text(
-                    text = stringResource(R.string.app_name)
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 5.dp, top = 5.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (!isSearchClicked.value) {
+                        Text(
+                            text = stringResource(R.string.app_name)
+                        )
+                        IconButton(
+                            onClick = {
+                                isSearchClicked.value = true
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "buttons search",
+                                tint = fontColor
+                            )
+                        }
+                    } else {
+                        Spacer(Modifier.height(5.dp))
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = defaultColor,
+                                unfocusedContainerColor = defaultColor,
+                                focusedBorderColor = Color.LightGray,
+                                unfocusedBorderColor = Color.LightGray
+                            ),
+                            textStyle = TextStyle(
+                                color = fontColor,
+                                fontSize = 16.sp,
+                            ),
+                            value = searchText.value,
+                            onValueChange = { searchText.value = it },
+                            keyboardOptions = keyboardOptions,
+                            keyboardActions = KeyboardActions {
+                                val text = searchText.value.replace(oldChar = ' ', newChar = '+')
+                                viewModel.getPhotos(order.value, text)
+                                keyboardController?.hide()
+                                isSearchClicked.value = false
+                            },
+                            leadingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        val text =
+                                            searchText.value.replace(oldChar = ' ', newChar = '+')
+                                        viewModel.getPhotos(order.value, text)
+                                        keyboardController?.hide()
+                                        isSearchClicked.value = false
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = "icon search",
+                                        tint = fontColor
+                                    )
+                                }
+                            },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        if(searchText.value.isBlank() || searchText.value.isBlank()){
+                                            isSearchClicked.value = false
+                                        }else{
+                                            searchText.value = ""
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "close search field",
+                                        tint = fontColor
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
             },
-            navigationIcon = { TODO() },
+            navigationIcon = {
+                IconButton(
+                    modifier = Modifier
+                        .padding(start = 10.dp),
+                    onClick = { TODO() }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_download),
+                        contentDescription = "button download",
+                        tint = fontColor
+                    )
+                }
+            },
             actions = {
                 TopAppBarAction(
                     isExpanded.value,
@@ -123,11 +241,16 @@ fun PhotosScreen(
                     fontColor = fontColor,
                     onPopularClick = {
                         isExpanded.value = false
-                        viewModel.isLoading("popular")
+                        order.value = "popular"
+                        viewModel.isLoading(
+                            order.value,
+                            if (searchText.value.isBlank() || searchText.value.isEmpty()) "cars" else searchText.value
+                        )
                     },
                     onLatestClick = {
                         isExpanded.value = false
-                        viewModel.isLoading("latest")
+                        order.value = "latest"
+                        viewModel.isLoading(order.value, searchText.value)
                     },
                     onDismissRequest = { isExpanded.value = false },
                     onExpandedChange = { isExpanded.value = it }
@@ -138,7 +261,7 @@ fun PhotosScreen(
             modifier = Modifier
                 .fillMaxSize(),
             state = swipeRefreshState,
-            onRefresh = { viewModel.isLoading("popular") }
+            onRefresh = { viewModel.isLoading(order.value, searchText.value) }
         ) {
             Box(
                 modifier = Modifier
@@ -175,8 +298,8 @@ fun PhotosScreen(
                                 iterations = LottieConstants.IterateForever
                             )
                         }
-                    }else{
-                        LazyVerticalStaggeredGrid(columns = StaggeredGridCells.Adaptive(200.dp)) {
+                    } else {
+                        LazyVerticalStaggeredGrid(columns = StaggeredGridCells.Fixed(2)) {
                             items(
                                 count = photos.itemCount,
                                 key = photos.itemKey { it.toString() }
@@ -186,13 +309,16 @@ fun PhotosScreen(
                                     PhotosGridItem(
                                         isFavorite = false,
                                         onFavoriteClick = { TODO() },
-                                        onShareClick = { TODO() },
+                                        onShareClick = {
+                                            SharePhoto().execute(
+                                                model.largeImageURL ?: "", "share", context
+                                            )
+                                        },
                                         onPhotoClick = { navController.navigate(Screens.PhotoScreen.route + "/${model.id}") },
                                         photosModel = model,
                                     )
                                 }
                             }
-                            Log.d("NetworkLogging", "load: ${photos.itemCount}")
                             if (photos.loadState.append is LoadState.Loading) {
                                 item {
                                     LottieAnimation(

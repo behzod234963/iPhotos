@@ -18,14 +18,14 @@ class PhotosViewModel @Inject constructor(
     private val _isRefresh = MutableStateFlow(false)
     val isRefresh = _isRefresh.asStateFlow()
 
-    fun getPhotos(order:String) = remoteUseCases.getRemotePhotos.execute()
+    fun getPhotos(order:String,q:String) = remoteUseCases.getRemotePhotos.execute(order = order, q = q)
 
-    fun isLoading(order: String) {
+    fun isLoading(order: String,q: String) {
         viewModelScope.launch {
             _isRefresh.value = true
             delay(3000L)
             _isRefresh.value = false
-            getPhotos(order)
+            getPhotos(order,q)
         }
     }
 }

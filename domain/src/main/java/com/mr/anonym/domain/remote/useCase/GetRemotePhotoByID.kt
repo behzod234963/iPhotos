@@ -15,6 +15,7 @@ class GetRemotePhotoByID(private val repository: RemotePhotosRepository) {
             val response = repository.getPhotoById(id = id)
             if (response.isSuccessful){
                 response.body()?.let { emit(it.hits) }
+                Log.d("NetworkLogging", "GetPhotoByIDNetworkInvoke: ${response.body()?.hits}")
             }
         }catch (e:HttpException){
             Log.d("NetworkLogging", "GetPhotoByIDNetworkInvoke: ${e.message}")

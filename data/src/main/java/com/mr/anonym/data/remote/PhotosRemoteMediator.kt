@@ -11,7 +11,9 @@ import retrofit2.HttpException
 
 @OptIn(ExperimentalPagingApi::class)
 class PhotosRemoteMediator(
-    private val api: PhotosApi
+    private val api: PhotosApi,
+    private val order:String,
+    private val q:String
 ) :RemoteMediator<Int,HitsItem>(){
     override suspend fun load(
         loadType: LoadType,
@@ -34,7 +36,9 @@ class PhotosRemoteMediator(
             val photos = loadKey?.let {
                 api.getPhotos(
                     page = it,
-                    perPage = 10
+                    perPage = 10,
+                    order = order,
+                    q = q
                 )
             }
             Log.d("NetworkLogging", "load: ${photos?.body()?.hits?.size}")

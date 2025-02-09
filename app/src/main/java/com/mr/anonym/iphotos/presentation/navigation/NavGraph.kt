@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mr.anonym.iphotos.presentation.utils.NavigationArguments
+import com.mr.anonym.iphotos.ui.screens.FullScreen
 import com.mr.anonym.iphotos.ui.screens.PhotoScreen
 import com.mr.anonym.iphotos.ui.screens.PhotosScreen
 import com.mr.anonym.iphotos.ui.screens.SplashScreen
@@ -27,19 +28,31 @@ fun NavGraph() {
         }
         composable(
             Screens.PhotoScreen.route + "/{id}",
-            arguments = listOf(
-                navArgument(
-                    name = "id"
-                ){
+            arguments = listOf(navArgument(name = "id"){
                     type = NavType.IntType
                     defaultValue = -1
-                }
-            )
+                })
         ) {entry->
             val id = entry.arguments?.getInt("id")?:-1
             PhotoScreen(
                 navController = navController,
-                arguments = NavigationArguments(id)
+                arguments = NavigationArguments(id,-1)
+            )
+        }
+        composable(
+            Screens.FullScreen.route + "/{screenID}",
+            arguments = listOf(navArgument("screenID"){
+                    type = NavType.IntType
+                    defaultValue = -1
+                })
+        ) {entry->
+            val id = entry.arguments?.getInt("screenID")?:-1
+            FullScreen(
+                navController = navController,
+                arguments = NavigationArguments(
+                    id = -1,
+                    fullID = id
+                )
             )
         }
     }

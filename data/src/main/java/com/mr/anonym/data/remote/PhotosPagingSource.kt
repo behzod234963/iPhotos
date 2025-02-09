@@ -7,6 +7,8 @@ import com.mr.anonym.domain.model.HitsItem
 
 class PhotosPagingSource(
     private val api: PhotosApi,
+    private val q:String,
+    private val order:String
 ) : PagingSource<Int, HitsItem>() {
     override fun getRefreshKey(state: PagingState<Int, HitsItem>): Int? = state.anchorPosition?.let {
         state.closestPageToPosition(it)?.prevKey?.plus(1)?:state.closestPageToPosition(it)?.nextKey?.minus(1)
@@ -18,6 +20,8 @@ class PhotosPagingSource(
             val perPage = 10
             val page = params.key ?: 1
             val response = api.getPhotos(
+                q = q,
+                order = order,
                 page = page,
                 perPage = perPage
             )
