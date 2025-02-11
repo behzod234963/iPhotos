@@ -4,5 +4,5 @@ import com.mr.anonym.domain.remote.repository.RemotePhotosRepository
 
 class GetRemotePhotosUseCase(private val repository: RemotePhotosRepository) {
 
-    fun execute(order:String,q:String) = repository.getPhotos(order = order, q = q)
+    operator fun invoke(order:String,q:String) = repository.getPhotos(order,q)
 }

@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -50,7 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.airbnb.lottie.compose.LottieAnimation
@@ -59,11 +59,11 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import com.mr.anonym.data.local.dataStore.DataStoreInstance
+import com.mr.anonym.domain.model.PhotosEntity
 import com.mr.anonym.iphotos.R
+import com.mr.anonym.iphotos.presentation.events.LocalDataEvent
 import com.mr.anonym.iphotos.presentation.navigation.Screens
 import com.mr.anonym.iphotos.presentation.utils.CheckConnection
-import com.mr.anonym.iphotos.presentation.utils.SharePhoto
 import com.mr.anonym.iphotos.presentation.viewModel.PhotosViewModel
 import com.mr.anonym.iphotos.ui.items.PhotosGridItem
 import kotlinx.coroutines.delay
@@ -78,12 +78,12 @@ fun PhotosScreen(
 
     val context = LocalContext.current
 
-    val dataStore = DataStoreInstance(context)
     val checkConnection = CheckConnection(context)
 
     val isExpanded = remember { mutableStateOf(false) }
     val isLoading = remember { mutableStateOf(true) }
     val isSearchClicked = remember { mutableStateOf(false) }
+    val isFavorite = remember { mutableStateOf(false) }
     val isRefresh = viewModel.isRefresh.collectAsState()
     val isConnected = checkConnection.networkStatus.collectAsState(false)
 
@@ -107,6 +107,8 @@ fun PhotosScreen(
 
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isRefresh.value)
 
+    val entity = viewModel.entity
+
     val photos = viewModel.getPhotos(
         order.value,
         if (
@@ -118,6 +120,8 @@ fun PhotosScreen(
             searchText.value
     ).collectAsLazyPagingItems()
 
+    val localPhotos = viewModel.localPhotos
+
     if (isConnected.value) {
         LaunchedEffect(Unit) {
             delay(2000)
@@ -126,7 +130,10 @@ fun PhotosScreen(
     } else {
         isLoading.value = false
     }
-
+    LaunchedEffect(Unit) {
+        delay(1000)
+        if (localPhotos.value.isNotEmpty()) viewModel.deleteLocalPhoto()
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -202,9 +209,9 @@ fun PhotosScreen(
                             trailingIcon = {
                                 IconButton(
                                     onClick = {
-                                        if(searchText.value.isBlank() || searchText.value.isBlank()){
+                                        if (searchText.value.isBlank() || searchText.value.isBlank()) {
                                             isSearchClicked.value = false
-                                        }else{
+                                        } else {
                                             searchText.value = ""
                                         }
                                     }
@@ -307,27 +314,17 @@ fun PhotosScreen(
                                 val model = photos[index]
                                 if (model != null) {
                                     PhotosGridItem(
-                                        isFavorite = false,
-                                        onFavoriteClick = { TODO() },
-                                        onShareClick = {
-                                            SharePhoto().execute(
-                                                model.largeImageURL ?: "", "share", context
-                                            )
+                                        onPhotoClick = {
+                                            viewModel.onLocalDataEvent(LocalDataEvent.InsertPhoto(
+                                                photo = PhotosEntity(
+                                                    id = model.id?:-1,
+                                                    isFavorite = false,
+                                                    imageUrl = model.largeImageURL
+                                                )
+                                            ))
+                                            navController.navigate(Screens.PhotoScreen.route + "/${model.id}")
                                         },
-                                        onPhotoClick = { navController.navigate(Screens.PhotoScreen.route + "/${model.id}") },
                                         photosModel = model,
-                                    )
-                                }
-                            }
-                            if (photos.loadState.append is LoadState.Loading) {
-                                item {
-                                    LottieAnimation(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(50.dp),
-                                        composition = loadingAnimation.value,
-                                        restartOnPlay = true,
-                                        iterations = LottieConstants.IterateForever
                                     )
                                 }
                             }

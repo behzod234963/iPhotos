@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.mr.anonym.domain.model.HitsItem
 import com.mr.anonym.domain.remote.useCase.RemoteUseCases
 import com.mr.anonym.iphotos.presentation.utils.downloadWithCoil
+import com.mr.anonym.iphotos.presentation.utils.saveImageToMemoryWithDefault
 import com.mr.anonym.iphotos.presentation.utils.saveImageToMemoryWithMediaStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,14 +44,30 @@ class FullScreenViewModel @Inject constructor(
         }
         getById()
     }
-    fun downloadAndSaveImageEvent(context: Context, imageUrl:String) = viewModelScope.launch {
+
+    fun changeSaveStatus(){
+        _isSaved.value = false
+    }
+
+    fun saveImageWithMediaStore(context: Context, imageUrl:String) = viewModelScope.launch {
         val imageData = downloadWithCoil(context, imageUrl)
-        Log.d("IOlogging", "downloadAndSaveImageEvent: $imageData")
-        if (imageData != null){
+        if (imageData != null) {
             saveImageToMemoryWithMediaStore(context,imageData)
             _isSaved.value = true
+        }else{
+            _isSaved.value = false
         }
     }
+    fun saveImageWithDefault(context: Context, imageUrl:String) = viewModelScope.launch {
+        val imageData = downloadWithCoil(context, imageUrl)
+        if (imageData != null) {
+            saveImageToMemoryWithDefault(context,imageData)
+            _isSaved.value = true
+        }else{
+            _isSaved.value = false
+        }
+    }
+
     private fun getById() = viewModelScope.launch {
         remoteUseCases.getRemotePhotoByID(id.intValue).collect {
             _photoModel.value = it

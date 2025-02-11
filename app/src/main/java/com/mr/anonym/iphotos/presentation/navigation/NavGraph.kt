@@ -23,6 +23,7 @@ fun NavGraph() {
         composable(Screens.SplashScreen.route) {
             SplashScreen(navController)
         }
+
         composable(Screens.PhotosScreen.route) {
             PhotosScreen(navController)
         }

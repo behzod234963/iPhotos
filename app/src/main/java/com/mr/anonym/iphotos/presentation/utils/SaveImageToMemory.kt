@@ -15,7 +15,7 @@ import java.io.OutputStream
 fun saveImageToMemoryWithMediaStore(context: Context, bitmap: Bitmap): Boolean {
 
     val fileName = "IMG_${System.currentTimeMillis()}.jpg"
-    val path = Environment.DIRECTORY_PICTURES
+    val path = Environment.DIRECTORY_PICTURES + "/iPhotos"
 
     val contentValues = ContentValues().apply {
         put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
@@ -40,7 +40,7 @@ fun saveImageToMemoryWithMediaStore(context: Context, bitmap: Bitmap): Boolean {
 fun saveImageToMemoryWithDefault(context: Context,bitmap: Bitmap) {
 
     val fileName = "IMG_${System.currentTimeMillis()}.jpg"
-    val path = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),"bek folder")
+    val path = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),"iPhotos")
 
     if (!path.exists()) path.mkdirs()
 

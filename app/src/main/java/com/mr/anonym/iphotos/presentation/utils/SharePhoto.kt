@@ -2,24 +2,24 @@ package com.mr.anonym.iphotos.presentation.utils
 
 import android.content.Context
 import android.content.Intent
-import androidx.core.content.ContextCompat.startActivity
-import com.mr.anonym.iphotos.R
+import android.graphics.Bitmap
+import android.net.Uri
+import android.os.Environment
+import android.util.Log
+import androidx.core.content.FileProvider
+import java.io.File
+import java.io.FileOutputStream
 
 class SharePhoto {
 
-    fun execute(
-        imageUri:String,
-        title:String,
-        context: Context,
-    ){
-        Intent(Intent.ACTION_SEND).apply {
-            type = "image/*"
-            putExtra(Intent.EXTRA_TEXT, title)
-        }.also {
-            val chooser = Intent.createChooser(
-                it, context.getString(R.string.share_via)
-            )
-            startActivity(context,chooser,null)
+    fun saveBitmapToFile(context: Context, bitmap: Bitmap): Uri? {
+        val file = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "shared_image.png")
+        return try {
+            FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+        } catch (e: Exception) {
+            Log.e("UtilsLogging", "saveBitmapToFile: ${e.message}", )
+            null
         }
     }
 }

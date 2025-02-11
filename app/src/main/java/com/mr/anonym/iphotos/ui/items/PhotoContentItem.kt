@@ -3,8 +3,6 @@ package com.mr.anonym.iphotos.ui.items
 import android.content.Context
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,12 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,24 +37,23 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.mr.anonym.domain.model.HitsItem
-import com.mr.anonym.domain.model.PhotosEntity
 import com.mr.anonym.iphotos.R
 
 @Composable
 fun PhotoContentComponent(
     context: Context,
     fontColor: Color,
-    model:HitsItem,
-    entity: PhotosEntity,
-    onContentPhotoClick:()->Unit,
-    onFavoriteClick:()->Unit,
-    onDownloadClick: ()->Unit,
-    onShareClick:()->Unit
+    model: HitsItem,
+    onContentPhotoClick: () -> Unit,
+    onFavoriteClick: (Boolean) -> Unit,
+    favoriteContent: @Composable ()->Unit,
+    onDownloadClick: () -> Unit,
+    onShareClick: () -> Unit
 ) {
 
-    val scrollState = rememberScrollState()
-    val isDownloadClick = remember { mutableStateOf( false ) }
+    val favoriteStatus = remember { mutableStateOf(false) }
 
+    Spacer(Modifier.height(100.dp))
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -67,18 +62,18 @@ fun PhotoContentComponent(
             modifier = Modifier
                 .wrapContentWidth()
                 .wrapContentHeight(),
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.Top,
         ) {
             AsyncImage(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(600.dp)
+                    .wrapContentHeight()
                     .clickable { onContentPhotoClick() },
                 model = ImageRequest.Builder(context)
                     .data(model.largeImageURL)
-                    .size(width = model.imageWidth?:5, height = model.imageHeight?:5)
+//                    .size(width = model.imageWidth?:5, height = model.imageHeight?:5)
                     .build(),
-                contentScale = ContentScale.Fit,
+                contentScale = ContentScale.Crop,
                 contentDescription = "content photo",
             )
         }
@@ -89,28 +84,17 @@ fun PhotoContentComponent(
                 .height(60.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
-        ){
+        ) {
+//            Icon button favorite
             IconButton(
-                onClick = { onFavoriteClick() }
-            ) {
-                if(entity.isFavorite){
-                    Icon(
-                        modifier = Modifier
-                            .size(40.dp),
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "button favorite",
-                        tint = Color.Red
-                    )
-                }else{
-                    Icon(
-                        modifier = Modifier
-                            .size(40.dp),
-                        imageVector = Icons.Default.FavoriteBorder,
-                        contentDescription = "button favorite",
-                        tint = Color.Red
-                    )
+                onClick = {
+                    favoriteStatus.value = !favoriteStatus.value
+                    onFavoriteClick(favoriteStatus.value)
                 }
+            ) {
+                favoriteContent()
             }
+//            Icon button download
             IconButton(
                 onClick = { onDownloadClick() }
             ) {
@@ -122,6 +106,7 @@ fun PhotoContentComponent(
                     tint = Color.Red
                 )
             }
+//            Icon button share
             IconButton(
                 onClick = { onShareClick() }
             ) {
@@ -140,40 +125,23 @@ fun PhotoContentComponent(
                 .fillMaxWidth()
                 .wrapContentWidth()
                 .padding(10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
+            horizontalAlignment = Alignment.Start
+        ) {
             Row {
-                Row (
+//                Content downloads
+                Row(
                     modifier = Modifier
                         .wrapContentWidth()
                         .height(40.dp)
-                        .border(width = 1.dp, color = Color.LightGray, shape = RoundedCornerShape(10.dp))
+                        .border(
+                            width = 1.dp,
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(10.dp)
+                        )
                         .padding(horizontal = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
-                ){
-                    Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "likes",
-                        tint = Color.Red
-                    )
-                    Spacer(Modifier.width(10.dp))
-                    Text(
-                        text = model.likes.toString(),
-                        color = fontColor,
-                        fontSize = 16.sp
-                    )
-                }
-                Spacer(Modifier.width(10.dp))
-                Row (
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .height(40.dp)
-                        .border(width = 0.5.dp, color = Color.LightGray, shape = RoundedCornerShape(10.dp))
-                        .padding(horizontal = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_download),
                         contentDescription = "downloads",
@@ -186,37 +154,21 @@ fun PhotoContentComponent(
                         fontSize = 16.sp
                     )
                 }
-                Row (
+                Spacer(Modifier.padding(horizontal = 5.dp))
+//                Content views
+                Row(
                     modifier = Modifier
                         .wrapContentWidth()
                         .height(40.dp)
-                        .border(width = 0.5.dp, color = Color.LightGray, shape = RoundedCornerShape(10.dp))
+                        .border(
+                            width = 1.dp,
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(10.dp)
+                        )
                         .padding(horizontal = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
-                ){
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "comments",
-                        tint = Color.Red
-                    )
-                    Spacer(Modifier.width(10.dp))
-                    Text(
-                        text = model.comments.toString(),
-                        color = fontColor,
-                        fontSize = 16.sp
-                    )
-                }
-                Spacer(Modifier.width(10.dp))
-                Row (
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .height(40.dp)
-                        .border(width = 0.5.dp, color = Color.LightGray, shape = RoundedCornerShape(10.dp))
-                        .padding(horizontal = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_views),
                         contentDescription = "views",
@@ -231,21 +183,122 @@ fun PhotoContentComponent(
                 }
             }
             Spacer(Modifier.height(10.dp))
-            Row (
+            Row {
+//                Content likes
+                Row(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .height(40.dp)
+                        .border(
+                            width = 1.dp,
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .padding(horizontal = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = "likes",
+                        tint = Color.Red
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = model.likes.toString(),
+                        color = fontColor,
+                        fontSize = 16.sp
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+//                Content comments
+                Row(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .height(40.dp)
+                        .border(
+                            width = 0.5.dp,
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .padding(horizontal = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "comments",
+                        tint = Color.Red
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = model.comments.toString(),
+                        color = fontColor,
+                        fontSize = 16.sp
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+            }
+            Spacer(Modifier.height(10.dp))
+            Column {
+//                Content type
+                Row(
+                    modifier = Modifier
+                        .height(40.dp)
+                        .border(
+                            width = 1.dp,
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .padding(horizontal = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Type: " + model.type,
+                        color = fontColor,
+                        fontSize = 16.sp
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+//                Content collections
+                Row(
+                    modifier = Modifier
+                        .height(40.dp)
+                        .border(
+                            width = 1.dp,
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .padding(horizontal = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Collections: " + model.collections.toString(),
+                        color = fontColor,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+//            Content tags
+            Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ){
-                Spacer(Modifier.width(10.dp))
-                Row (
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Row(
                     modifier = Modifier
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .border(width = 0.5.dp, color = Color.LightGray, shape = RoundedCornerShape(10.dp))
-                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                        .border(
+                            width = 1.dp,
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .padding(horizontal = 5.dp, vertical = 5.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_tag),
                         contentDescription = "tags",

@@ -1,10 +1,17 @@
 package com.mr.anonym.iphotos.presentation.viewModel
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.app.ActivityCompat
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -55,12 +62,17 @@ class PhotoViewModel @Inject constructor(
             }
         }
         onLocalDataEvent(LocalDataEvent.GetPhotos)
+        onLocalDataEvent(LocalDataEvent.GetPhoto(id.intValue))
     }
 
     fun getById() = viewModelScope.launch {
         remoteUseCases.getRemotePhotoByID(id.intValue).collect {
             _photoModel.value = it
         }
+    }
+
+    fun changeEntityValue(entity: PhotosEntity) = viewModelScope.launch {
+        _photoEntity.value = entity
     }
 
     fun isRefresh() = viewModelScope.launch {
@@ -71,48 +83,53 @@ class PhotoViewModel @Inject constructor(
     }
 
     fun onLocalDataEvent(event: LocalDataEvent) = viewModelScope.launch {
-        when (event) {
-            is LocalDataEvent.GetPhoto -> {
-                localUseCases.getPhoto(event.id).collect {
-                    _photoEntity.value = it
+        try {
+            when (event) {
+                is LocalDataEvent.GetPhoto -> {
+                    localUseCases.getPhoto(event.id).collect {
+                        _photoEntity.value = it
+                    }
                 }
-            }
 
-            is LocalDataEvent.GetPhotos -> {
-                localUseCases.getPhotos().collect {
-                    _localPhotos.value = it
+                is LocalDataEvent.GetPhotos -> {
+                    localUseCases.getPhotos().collect {
+                        _localPhotos.value = it
+                    }
                 }
-            }
 
-            is LocalDataEvent.InsertPhoto -> {
-                localUseCases.insertPhoto(event.photo)
-            }
+                is LocalDataEvent.InsertPhoto -> {
+                    localUseCases.insertPhoto(event.photo)
+                }
 
-            is LocalDataEvent.UpdateIsFavorite -> {
-                localUseCases.updateIsFavorite(event.id, event.isFavorite)
+                is LocalDataEvent.UpdateIsFavorite -> {
+                    localUseCases.updateIsFavorite(event.id, event.isFavorite)
+                }
+                is LocalDataEvent.ClearPhotos->{
+                    localUseCases.clearPhotos()
+                }
+
+                is LocalDataEvent.DeletePhoto -> {
+                    localUseCases.deletePhoto(event.photo)
+                }
+                is LocalDataEvent.InsertAll -> TODO()
             }
+        }catch (e:Exception){
+            Log.e("LocalLogging", "onLocalDataEvent: ${e.message}", )
         }
     }
 
-    fun downloadAndSaveImageEvent(context: Context, imageUrl:String) = viewModelScope.launch {
-        val imageData = downloadWithCoil(context, imageUrl)
-        Log.d("IOlogging", "downloadAndSaveImageEvent: $imageData")
-        if (imageData != null){
-            saveImageToMemoryWithMediaStore(context,imageData)
-            _isSaved.value = true
-            Log.d("IOlogging", "downloadAndSaveImageEvent: $imageData")
-        }else{
-            _isSaved.value = false
-        }
-    }
     fun saveImageWithMediaStore(context: Context, imageUrl:String) = viewModelScope.launch {
         val imageData = downloadWithCoil(context, imageUrl)
+
         if (imageData != null) {
             saveImageToMemoryWithMediaStore(context,imageData)
             _isSaved.value = true
         }else{
             _isSaved.value = false
         }
+    }
+    fun changeSaveStatus(){
+        _isSaved.value = false
     }
     fun saveImageWithDefault(context: Context, imageUrl:String) = viewModelScope.launch {
         val imageData = downloadWithCoil(context, imageUrl)

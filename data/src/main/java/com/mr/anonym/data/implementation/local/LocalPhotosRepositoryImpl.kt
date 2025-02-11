@@ -1,4 +1,4 @@
-package com.mr.anonym.data.local.implementation.local
+package com.mr.anonym.data.implementation.local
 
 import com.mr.anonym.data.local.room.PhotosDao
 import com.mr.anonym.domain.local.repository.LocalPhotosRepository
@@ -12,6 +12,14 @@ class LocalPhotosRepositoryImpl(private val dao:PhotosDao):LocalPhotosRepository
 
     override suspend fun updateIsFavorite(id: Int, isFavorite: Boolean) {
         dao.updateIsFavorite(id, isFavorite)
+    }
+
+    override suspend fun insertAll(photos: List<PhotosEntity>) {
+        dao.insertAll(photos)
+    }
+
+    override suspend fun clearPhotos() {
+        dao.clearPhotos()
     }
 
     override fun getPhotos(): Flow<List<PhotosEntity>> = dao.getPhotos()

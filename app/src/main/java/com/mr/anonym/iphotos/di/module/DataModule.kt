@@ -2,11 +2,15 @@ package com.mr.anonym.iphotos.di.module
 
 import android.app.Application
 import android.content.Context
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
 import androidx.room.Room
 import com.mr.anonym.data.local.dataStore.DataStoreInstance
 import com.mr.anonym.data.local.room.PhotosDao
 import com.mr.anonym.data.local.room.RoomInstance
 import com.mr.anonym.data.remote.PhotosApi
+import com.mr.anonym.domain.model.PhotosEntity
 import com.mr.anonym.iphotos.presentation.utils.BASE_URL
 import com.mr.anonym.iphotos.presentation.utils.DATABASE_NAME
 import dagger.Module
@@ -30,14 +34,14 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun provideOkHTTP():OkHttpClient =
+    fun provideOkHTTP(): OkHttpClient =
         OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
             .build()
 
     @Provides
     @Singleton
-    fun provideRetrofit2():Retrofit =
+    fun provideRetrofit2(): Retrofit =
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -46,11 +50,11 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun providePhotosApi(retrofit: Retrofit):PhotosApi = retrofit.create(PhotosApi::class.java)
+    fun providePhotosApi(retrofit: Retrofit): PhotosApi = retrofit.create(PhotosApi::class.java)
 
     @Provides
     @Singleton
-    fun provideRoomInstance(application:Application): RoomInstance =
+    fun provideRoomInstance(application: Application): RoomInstance =
         Room.databaseBuilder(
             application,
             RoomInstance::class.java,
@@ -63,5 +67,6 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun provideDataStore(@ApplicationContext context:Context):DataStoreInstance = DataStoreInstance(context)
+    fun provideDataStore(@ApplicationContext context: Context): DataStoreInstance =
+        DataStoreInstance(context)
 }

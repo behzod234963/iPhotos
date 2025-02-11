@@ -1,14 +1,16 @@
 package com.mr.anonym.iphotos.di.module
 
-import com.mr.anonym.data.local.implementation.local.LocalPhotosRepositoryImpl
-import com.mr.anonym.data.local.implementation.remote.RemotePhotosRepositoryImpl
+import com.mr.anonym.data.implementation.local.LocalPhotosRepositoryImpl
+import com.mr.anonym.data.implementation.remote.RemotePhotosRepositoryImpl
 import com.mr.anonym.data.local.room.PhotosDao
 import com.mr.anonym.data.remote.PhotosApi
 import com.mr.anonym.domain.local.repository.LocalPhotosRepository
-import com.mr.anonym.domain.local.useCase.DeletePhotoUseCase
-import com.mr.anonym.domain.local.useCase.GetPhotoUseCase
-import com.mr.anonym.domain.local.useCase.GetPhotosUseCase
-import com.mr.anonym.domain.local.useCase.InsertPhotoUseCase
+import com.mr.anonym.domain.local.useCase.ClearLocalPhotosUseCase
+import com.mr.anonym.domain.local.useCase.DeleteLocalPhotoUseCase
+import com.mr.anonym.domain.local.useCase.GetLocalPhotoUseCase
+import com.mr.anonym.domain.local.useCase.GetLocalPhotosUseCase
+import com.mr.anonym.domain.local.useCase.InsertAllLocalPhotosUseCase
+import com.mr.anonym.domain.local.useCase.InsertLocalPhotoUseCase
 import com.mr.anonym.domain.local.useCase.LocalUseCases
 import com.mr.anonym.domain.local.useCase.UpdateIsFavoriteUseCase
 import com.mr.anonym.domain.remote.repository.RemotePhotosRepository
@@ -32,7 +34,7 @@ class DomainModule {
     @Provides
     @Singleton
     fun provideRemoteUseCase(repository: RemotePhotosRepository) = RemoteUseCases(
-        getRemotePhotos = GetRemotePhotosUseCase(repository),
+        getRemotePhotosUseCase = GetRemotePhotosUseCase(repository),
         getRemotePhotoByID = GetRemotePhotoByID(repository)
     )
 
@@ -43,10 +45,12 @@ class DomainModule {
     @Provides
     @Singleton
     fun provideLocalUseCases(repository: LocalPhotosRepository) = LocalUseCases(
-        insertPhoto = InsertPhotoUseCase(repository),
-        getPhotos = GetPhotosUseCase(repository),
-        getPhoto = GetPhotoUseCase(repository),
+        insertAllLocalPhotosUseCase = InsertAllLocalPhotosUseCase(repository),
+        insertPhoto = InsertLocalPhotoUseCase(repository),
+        getPhotos = GetLocalPhotosUseCase(repository),
+        getPhoto = GetLocalPhotoUseCase(repository),
         updateIsFavorite = UpdateIsFavoriteUseCase(repository),
-        deletePhoto = DeletePhotoUseCase(repository)
+        deletePhoto = DeleteLocalPhotoUseCase(repository),
+        clearPhotos = ClearLocalPhotosUseCase(repository)
     )
 }
